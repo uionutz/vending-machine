@@ -9,11 +9,9 @@ import java.util.stream.Collectors;
 public class VendingMachineLtd {
 
     private Map<Coin, Integer> coinsInventory;
-    private List<Coin> coinsValues;
 
     public VendingMachineLtd() {
-        coinsInventory = new HashMap<>();
-        coinsValues = new ArrayList<>();
+        coinsInventory = new TreeMap<>((o1, o2) -> Integer.compare(o2.getDenomination(), o1.getDenomination()));
     }
 
     public Map<Coin, Integer> getCoinsInventory() {
@@ -31,11 +29,9 @@ public class VendingMachineLtd {
         }
 
         Collections.list(props.propertyNames()).stream().map(Object::toString)
+                .filter(name -> Integer.valueOf(props.getProperty(name)) > 0)
                 .forEach(name -> coinsInventory.put(Coin.fromValue(Integer.valueOf(name)), Integer.valueOf(props.getProperty(name))));
-        coinsValues = coinsInventory.entrySet().stream().filter(ce -> ce.getValue() > 0)
-                .map(ce -> ce.getKey())
-                .sorted((o1, o2) -> Integer.compare(o1.getDenomination(), o1.getDenomination()))
-                .collect(Collectors.toList());
+
     }
 
     public Collection<Coin> getOptimalChangeFor(int pence) {
@@ -49,19 +45,18 @@ public class VendingMachineLtd {
         while (amount > 0) {
             Coin coin = getMaxValueCoinForValueFromInventory(amount);
             coinsInventory.computeIfPresent(coin, (coin1, integer) -> integer - coin.getDenomination());
-            if(coinsInventory.get(coin) <= 0 ) {
-                coinsValues.removeIf(coin1->coin1.equals(coin));
+            if (coinsInventory.get(coin) <= 0) {
+                coinsInventory.entrySet().removeIf(coinIntegerEntry -> coinIntegerEntry.getKey().equals(coin));
             }
             amount = amount - coin.getDenomination();
 
             result.add(coin);
         }
-        System.out.println(result);
         return result;
     }
 
     protected Coin getMaxValueCoinForValueFromInventory(int value) {
-        List<Coin> coins = coinsValues.stream().filter(coin -> coin.getDenomination() <= value).collect(Collectors.toList());
+        List<Coin> coins = coinsInventory.keySet().stream().filter(coin -> coin.getDenomination() <= value).collect(Collectors.toList());
         if (coins.isEmpty())
             throw new Coin.NoCoinFoundException("No coin found for this amount: " + value);
         else
