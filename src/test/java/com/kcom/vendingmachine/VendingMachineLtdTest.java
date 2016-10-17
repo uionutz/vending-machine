@@ -1,7 +1,6 @@
 package com.kcom.vendingmachine;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -61,4 +60,12 @@ public class VendingMachineLtdTest {
         vm.getOptimalChangeFor(90);
     }
 
+
+    @Test
+    public void testGetChangeFor21Pence(){
+        vm.loadPropsFile("coin-inventory21.properties");
+        Collection<Coin> coins = vm.getOptimalChangeFor(21);
+        Collection<Coin> expected = Arrays.asList(Coin.TEN_PENCE, Coin.FIVE_PENCE, Coin.TWO_PENCE, Coin.TWO_PENCE, Coin.TWO_PENCE);
+        assertEquals(expected, coins);
+    }
 }

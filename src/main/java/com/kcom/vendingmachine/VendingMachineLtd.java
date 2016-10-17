@@ -52,19 +52,19 @@ public class VendingMachineLtd {
     }
 
     private Collection<Coin> findSolution(Stack<Coin> coins, int amount) {
-        if (amount == 0) return coins;
+        if (amount == 0){
+            return coins;
+        }
         else {
             Optional<Coin> optionalCoin = getMaxValueCoinForValueFromInventory(amount);
             if (optionalCoin.isPresent()) {
                 Coin coin = optionalCoin.get();
-                Integer value = coinsInventory.computeIfPresent(coin, (coin1, count) -> count - 1);
-                if (value <= 0) {
+                Integer coinCount = coinsInventory.computeIfPresent(coin, (coin1, count) -> count - 1);
+                if (coinCount <= 0) {
                     coinsInventory.entrySet().removeIf(coinIntegerEntry -> coinIntegerEntry.getKey().equals(coin));
                 }
-                amount = amount - coin.getDenomination();
-
                 coins.push(coin);
-                return findSolution(coins, amount);
+                return findSolution(coins, amount - coin.getDenomination());
             } else {
                 Coin pop = coins.pop();
                 return findSolution(coins, amount + pop.getDenomination());
