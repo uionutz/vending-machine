@@ -1,11 +1,10 @@
 package com.kcom.vendingmachine;
 
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 public enum Coin {
@@ -30,11 +29,12 @@ public enum Coin {
     }
 
     public static Coin getMaxValueCoinForValue(int value) {
-        List<Coin> coins = Arrays.stream(values()).sorted().filter(coin -> coin.getDenomination() <= value).collect(Collectors.toList());
-        if (coins.isEmpty())
+        Optional<Coin> first = Arrays.stream(values()).sorted((c1, c2) -> Integer.compare(c2.getDenomination(), c1.getDenomination())).filter(coin -> coin.getDenomination() <= value).findFirst();
+        if (first.isPresent()) {
+            return first.get();
+        } else {
             throw new NoCoinFoundException("No coin found for this amount: " + value);
-        else
-            return coins.stream().sorted((c1, c2) -> Integer.compare(c2.getDenomination(), c1.getDenomination())).findFirst().get();
+        }
     }
 
     public static Coin fromValue(Integer value) {

@@ -1,11 +1,12 @@
 package com.kcom.vendingmachine;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
+@Slf4j
 public class VendingMachineLtd {
 
     private Map<Coin, Integer> coinsInventory;
@@ -22,10 +23,8 @@ public class VendingMachineLtd {
         Properties props = new Properties();
         try (FileInputStream fileInputStream = new FileInputStream("src/main/resources/" + propertiesPath)) {
             props.load(fileInputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("error opening file {}", propertiesPath, e);
         }
 
         Collections.list(props.propertyNames()).stream().map(Object::toString)
@@ -35,8 +34,11 @@ public class VendingMachineLtd {
     }
 
     public Collection<Coin> getOptimalChangeFor(int pence) {
-        if (pence <= 0) return Collections.EMPTY_LIST;
-        else return getOptimalChangeForPositiveAmounts(pence);
+        if (pence <= 0) {
+            return Collections.emptyList();
+        } else {
+            return getOptimalChangeForPositiveAmounts(pence);
+        }
     }
 
     protected Collection<Coin> getOptimalChangeForPositiveAmounts(int pence) {
@@ -44,8 +46,8 @@ public class VendingMachineLtd {
         int amount = pence;
         while (amount > 0) {
             Coin coin = getMaxValueCoinForValueFromInventory(amount);
-            coinsInventory.computeIfPresent(coin, (coin1, integer) -> integer - coin.getDenomination());
-            if (coinsInventory.get(coin) <= 0) {
+            Integer value = coinsInventory.computeIfPresent(coin, (coin1, count) -> count - 1);
+            if (value <= 0) {
                 coinsInventory.entrySet().removeIf(coinIntegerEntry -> coinIntegerEntry.getKey().equals(coin));
             }
             amount = amount - coin.getDenomination();
@@ -56,10 +58,11 @@ public class VendingMachineLtd {
     }
 
     protected Coin getMaxValueCoinForValueFromInventory(int value) {
-        List<Coin> coins = coinsInventory.keySet().stream().filter(coin -> coin.getDenomination() <= value).collect(Collectors.toList());
-        if (coins.isEmpty())
+        Optional<Coin> first = coinsInventory.keySet().stream().filter(coin -> coin.getDenomination() <= value).findFirst();
+        if (first.isPresent()) {
+            return first.get();
+        } else {
             throw new Coin.NoCoinFoundException("No coin found for this amount: " + value);
-        else
-            return coins.stream().findFirst().get();
+        }
     }
 }
