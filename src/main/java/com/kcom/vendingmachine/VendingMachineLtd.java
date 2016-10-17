@@ -42,27 +42,37 @@ public class VendingMachineLtd {
     }
 
     protected Collection<Coin> getOptimalChangeForPositiveAmounts(int pence) {
-        Collection<Coin> result = new ArrayList<>();
-        int amount = pence;
-        while (amount > 0) {
-            Coin coin = getMaxValueCoinForValueFromInventory(amount);
-            Integer value = coinsInventory.computeIfPresent(coin, (coin1, count) -> count - 1);
-            if (value <= 0) {
-                coinsInventory.entrySet().removeIf(coinIntegerEntry -> coinIntegerEntry.getKey().equals(coin));
-            }
-            amount = amount - coin.getDenomination();
-
-            result.add(coin);
+        Stack<Coin> result = new Stack<>();
+        try{
+            findSolution(result, pence);
+        }catch(EmptyStackException e){
+            throw new Coin.NoCoinFoundException("Insuficiend coinage for amount "+ pence, e);
         }
         return result;
     }
 
-    protected Coin getMaxValueCoinForValueFromInventory(int value) {
-        Optional<Coin> first = coinsInventory.keySet().stream().filter(coin -> coin.getDenomination() <= value).findFirst();
-        if (first.isPresent()) {
-            return first.get();
-        } else {
-            throw new Coin.NoCoinFoundException("No coin found for this amount: " + value);
+    private Collection<Coin> findSolution(Stack<Coin> coins, int amount) {
+        if (amount == 0) return coins;
+        else {
+            Optional<Coin> optionalCoin = getMaxValueCoinForValueFromInventory(amount);
+            if (optionalCoin.isPresent()) {
+                Coin coin = optionalCoin.get();
+                Integer value = coinsInventory.computeIfPresent(coin, (coin1, count) -> count - 1);
+                if (value <= 0) {
+                    coinsInventory.entrySet().removeIf(coinIntegerEntry -> coinIntegerEntry.getKey().equals(coin));
+                }
+                amount = amount - coin.getDenomination();
+
+                coins.push(coin);
+                return findSolution(coins, amount);
+            } else {
+                Coin pop = coins.pop();
+                return findSolution(coins, amount + pop.getDenomination());
+            }
         }
+    }
+
+    protected Optional<Coin> getMaxValueCoinForValueFromInventory(int value) {
+        return coinsInventory.keySet().stream().filter(coin -> coin.getDenomination() <= value).findFirst();
     }
 }

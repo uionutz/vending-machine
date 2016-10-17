@@ -2,10 +2,8 @@ package com.kcom.vendingmachine;
 
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.EmptyStackException;
 import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.stream.Collectors;
 
 public enum Coin {
 
@@ -48,6 +46,10 @@ public enum Coin {
     static class NoCoinFoundException extends RuntimeException {
         public NoCoinFoundException(String s) {
             super(s);
+        }
+
+        public NoCoinFoundException(String s, Exception e) {
+            super(s, e);
         }
     }
 }

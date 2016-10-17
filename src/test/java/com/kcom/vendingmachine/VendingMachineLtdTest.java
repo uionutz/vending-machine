@@ -1,5 +1,6 @@
 package com.kcom.vendingmachine;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,6 +11,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+@Slf4j
 public class VendingMachineLtdTest {
 
     VendingMachineLtd vm = new VendingMachineLtd();
@@ -44,5 +46,19 @@ public class VendingMachineLtdTest {
     }
 
 
+    @Test
+    public void testGetChangeFor11Pence(){
+        vm.loadPropsFile("coin-inventory11.properties");
+        Collection<Coin> coins = vm.getOptimalChangeFor(11);
+        Collection<Coin> expected = Arrays.asList(Coin.FIVE_PENCE, Coin.TWO_PENCE, Coin.TWO_PENCE, Coin.TWO_PENCE);
+        assertEquals(expected, coins);
+    }
+
+
+    @Test(expected = Coin.NoCoinFoundException.class)
+    public void testGetChangeFor90Pence(){
+        vm.loadPropsFile("coin-inventory90.properties");
+        vm.getOptimalChangeFor(90);
+    }
 
 }
