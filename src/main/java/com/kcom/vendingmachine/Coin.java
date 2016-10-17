@@ -2,7 +2,6 @@ package com.kcom.vendingmachine;
 
 
 import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.Optional;
 
 public enum Coin {
@@ -27,7 +26,9 @@ public enum Coin {
     }
 
     public static Coin getMaxValueCoinForValue(int value) {
-        Optional<Coin> first = Arrays.stream(values()).sorted((c1, c2) -> Integer.compare(c2.getDenomination(), c1.getDenomination())).filter(coin -> coin.getDenomination() <= value).findFirst();
+        Optional<Coin> first = Arrays.stream(values())
+                .sorted((c1, c2) -> Integer.compare(c2.getDenomination(), c1.getDenomination()))
+                .filter(coin -> coin.getDenomination() <= value).findFirst();
         if (first.isPresent()) {
             return first.get();
         } else {
@@ -38,9 +39,11 @@ public enum Coin {
     public static Coin fromValue(Integer value) {
         Optional<Coin> coinOptional = Arrays.stream(values()).filter(coin -> coin.getDenomination() == value)
                 .findAny();
-        if (coinOptional.isPresent())
+        if (coinOptional.isPresent()) {
             return coinOptional.get();
-        else throw new NoCoinFoundException("No coin found for this amount: " + value);
+        } else {
+            throw new NoCoinFoundException("No coin found for this amount: " + value);
+        }
     }
 
     static class NoCoinFoundException extends RuntimeException {
@@ -52,4 +55,5 @@ public enum Coin {
             super(s, e);
         }
     }
+
 }
